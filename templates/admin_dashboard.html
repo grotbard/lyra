@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <h2>Admin Dashboard</h2>
+
+    <table>
+        <tr>
+            <th>Username</th>
+            <th>Points</th>
+            <th>Modify Points</th>
+        </tr>
+        {% for user in users %}
+            <tr>
+                <td>{{ user[1] }}</td>
+                <td>{{ user[3] }}</td>
+                <td>
+                    <form action="/admin_modify_points" method="post">
+                        <input type="hidden" name="user_id" value="{{ user[0] }}">
+                        <input type="text" name="points_to_add" placeholder="Points to Add">
+                        <button type="submit">Add Points</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

@@ -94,11 +94,14 @@ def admin_dashboard():
         cursor.execute('SELECT * FROM users WHERE username=?', (session['user'],))
         user = cursor.fetchone()
 
-        conn.close()
 
         if user[4]:  # Check if user has admin privilege
-            return f"Hello, Admin! This is the admin dashboard. Points: {user[3]}"
+            cursor.execute('SELECT * FROM users')
+            users = cursor.fetchall()
+            conn.close()
+            return render_template('admin_dashboard.html', users=users)
         else:
+            conn.close()
             return "Access denied. You do not have admin privileges."
     else:
         return redirect('/')
@@ -122,6 +125,25 @@ def add_points():
         return redirect('/')
 
 
+@app.route('/admin_modify_points', methods=['POST'])
+def admin_modify_points():
+    if 'user' in session:
+        if session['user'] == 'admin':
+            user_id = request.form['user_id']
+            points_to_add = int(request.form['points_to_add'])
+
+            conn = create_connection()
+            cursor = conn.cursor()
+
+            cursor.execute('UPDATE users SET points = points + ? WHERE id = ?', (points_to_add, user_id))
+            conn.commit()
+
+            conn.close()
+
+            return redirect('/admin_dashboard')
+
+    return redirect('/login')
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -134,6 +156,11 @@ def register():
 
             conn = create_connection()
             cursor = conn.cursor()
+            cursor.execute('SELECT * FROM users WHERE username=?', (username,))
+            existing_user = cursor.fetchone()
+            if existing_user:
+                conn.close()
+                return "Username already exists. Please choose a different username."
 
             admin_privilege = 1 if username == 'admin' else 0
 
